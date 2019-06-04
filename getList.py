@@ -50,34 +50,38 @@ def check_report(driver=None, row_num=0):
 
     # if there is more than one tab, it means that a Livestock or Poultry tab must be present.
     if len(tabs) > 1:
-        print(name + ' has Livestock/Poultry, going back.')
-        action = 'Needs verification'
-        cancel_button = driver.find_element_by_id('submitCancel')
-        cancel_button.click()
-        row_num += 1
-        winsound.Beep(2500, 1000)
+        print(name + ' has Livestock/Poultry, Verify.')
+        action = 'Needed verification'
+        print('clicking on the second tab')
+        tabs[1].click()
+        winsound.Beep(2500, 1500)
+        a = input('Enter any letter when you\'re done.');
+        # cancel_button = driver.find_element_by_id('submitCancel')
+        # cancel_button.click()
+        # row_num += 1
 
     # If not, we can send the report to the server.
     else:
         print(name + ' has no Livestock/Poultry, Sending to server')
-        # Checking the 'send to server' checkbox.
-        print('Clicking checkbox.')
-        server_checkbox = driver.find_element_by_id('_changeStatus6')
-        server_checkbox.click()
-        # Submitting the report.
-        print('Clicking submit button.')
-        submit_button = driver.find_element_by_id('submit')
-        submit_button.click()
-        action = 'Sent to server'
-        try:
-            print('waiting to see if alert pops up.')
-            WebDriverWait(driver, 5).until(EC.alert_is_present(), 'Waited for an alert that didn\'t appear')
-            # Clicking 'Ok' in the confirmation alert.
-            print('Closing alert.')
-            alert = driver.switch_to.alert
-            alert.accept()
-        except TimeoutException:
-            print('no alert appeared')
+
+    # Checking the 'send to server' checkbox.
+    print('Clicking checkbox.')
+    server_checkbox = driver.find_element_by_id('_changeStatus6')
+    server_checkbox.click()
+    # Submitting the report.
+    print('Clicking submit button.')
+    submit_button = driver.find_element_by_id('submit')
+    submit_button.click()
+    action = 'Sent to server'
+    try:
+        print('waiting to see if alert pops up.')
+        WebDriverWait(driver, 5).until(EC.alert_is_present(), 'Waited for an alert that didn\'t appear')
+        # Clicking 'Ok' in the confirmation alert.
+        print('Closing alert.')
+        alert = driver.switch_to.alert
+        alert.accept()
+    except TimeoutException:
+        print('no alert appeared')
 
     # Keeping logs like a good boy.
     print('Keeping logs.')
@@ -100,6 +104,7 @@ a = input('Enter any key after loading the page with the list of households.')
 row = 0
 timeout_count = 0
 page_offset = 0
+household_count = 0
 while row < 10:
     try:
         print('Waiting for the table to load.')
@@ -110,11 +115,24 @@ while row < 10:
             next_button = chrome_driver.find_element_by_id('example_next')
             next_button.click()
         row = check_report(chrome_driver, row)
+        household_count += 1
+        print(str(household_count) + ' household(s) done in this stretch')
+
     except TimeoutException:
+        long_beep()
         print('Timed Out')
         timeout_count += 1
         if timeout_count > 2:
             chrome_driver.refresh()
+            try:
+                print('waiting to see if alert pops up.')
+                WebDriverWait(chrome_driver, 5).until(EC.alert_is_present(), 'Waited for an alert that didn\'t appear')
+                # Clicking 'Ok' in the confirmation alert.
+                print('Closing alert.')
+                alert = chrome_driver.switch_to.alert
+                alert.accept()
+            except TimeoutException:
+                print('no alert appeared')
     if row == 10:
         page_offset += 1
         row = 0
